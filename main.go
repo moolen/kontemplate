@@ -21,8 +21,8 @@ import (
 	"os/exec"
 
 	"github.com/polydawn/meep"
-	"github.com/tazjin/kontemplate/context"
-	"github.com/tazjin/kontemplate/templater"
+	"github.com/moolen/kontemplate/context"
+	"github.com/moolen/kontemplate/templater"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -41,6 +41,7 @@ var (
 	// Global flags
 	includes = app.Flag("include", "Resource sets to include explicitly").Short('i').Strings()
 	excludes = app.Flag("exclude", "Resource sets to exclude explicitly").Short('e').Strings()
+	tpl = app.Flag("template", "Template directory to include").Short('t').String()
 
 	// Commands
 	template     = app.Command("template", "Template resource sets and print them")
@@ -158,7 +159,7 @@ func loadContextAndResources(file *string) (*context.Context, *[]templater.Rende
 	if err != nil {
 		app.Fatalf("Error loading context: %v\n", err)
 	}
-
+	ctx.TemplatePath = *tpl
 	resources, err := templater.LoadAndApplyTemplates(includes, excludes, ctx)
 	if err != nil {
 		app.Fatalf("Error templating resource sets: %v\n", err)

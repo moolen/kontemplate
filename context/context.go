@@ -49,6 +49,9 @@ type Context struct {
 
 	// This field represents the absolute path to the context base directory and should not be manually specified.
 	BaseDir string
+
+	// This field represents the absolute path to the directory containing template files
+	TemplatePath string
 }
 
 type ContextLoadingError struct {

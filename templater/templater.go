@@ -16,13 +16,14 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig"
+	"github.com/moolen/kontemplate/context"
+	"github.com/moolen/kontemplate/util"
 	"github.com/polydawn/meep"
-	"github.com/tazjin/kontemplate/context"
-	"github.com/tazjin/kontemplate/util"
 )
 
 const failOnMissingKeys string = "missingkey=error"
@@ -119,8 +120,23 @@ func processFiles(c *context.Context, rs *context.ResourceSet, rp string, files 
 }
 
 func templateFile(c *context.Context, rs *context.ResourceSet, filename string) (string, error) {
-	tpl, err := template.New(path.Base(filename)).Funcs(templateFuncs()).Option(failOnMissingKeys).ParseFiles(filename)
-
+	var tpl *template.Template
+	var err error
+	tpl = template.New(path.Base(filename)).Funcs(templateFuncs()).Option(failOnMissingKeys)
+	if c.TemplatePath != "" {
+		dir, err := os.Getwd()
+		if err != nil {
+			return "", meep.New(&TemplatingError{}, meep.Cause(err))
+		}
+		tpl, err = tpl.ParseGlob(filepath.Join(dir, c.BaseDir, c.TemplatePath, "*.tmpl"))
+		if err != nil {
+			return "", meep.New(
+				&TemplatingError{},
+				meep.Cause(err),
+			)
+		}
+	}
+	tpl, err = tpl.ParseFiles(filename)
 	if err != nil {
 		return "", meep.New(
 			&TemplateNotFoundError{Name: filename},
